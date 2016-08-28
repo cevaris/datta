@@ -15,8 +15,10 @@ public class MysqlClientIntegrationTest {
     private BaseClient testClient;
 
     @Before
-    public void setUp() {
+    public void setUp() throws Exception {
         testClient = newTestClient();
+
+        Await.result(testClient.execute(sqlTruncate));
     }
 
     @Test
@@ -46,6 +48,8 @@ public class MysqlClientIntegrationTest {
 
         List<ResultRow> actual = Lists.newArrayList(qr.iterator());
         Assert.assertNotNull(actual);
+
+        Await.result(testClient.execute(sqlTruncate));
     }
 
     private BaseClient newTestClient() {
@@ -57,9 +61,11 @@ public class MysqlClientIntegrationTest {
 
     private String sqlSelectAll = "SELECT * FROM test_table";
 
+    private String sqlTruncate = "TRUNCATE test_table";
+
     private String sqlInsertTestData = new StringBuilder()
             .append("INSERT INTO `test_table` (`test_varchar`, `test_char`, `test_datetime`, `test_int`, `test_float`, `test_blob`) VALUES")
-            .append("('abc','a','2016-08-27 19:06:26',11,1.232,NULL),")
+            .append("('abc','a','2016-08-27 19:06:26',11,1.232,X'3078303131'),")
             .append("('cdf','b','2016-08-27 19:08:48',12,1.212,X'3078303132')")
             .toString();
 

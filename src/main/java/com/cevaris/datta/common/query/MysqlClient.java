@@ -1,12 +1,13 @@
 package com.cevaris.datta.common.query;
 
 import com.cevaris.datta.common.query.response.QueryResponse;
+import com.cevaris.datta.common.query.response.QueryState;
 import com.cevaris.datta.common.query.response.ResultRow;
+import com.google.common.collect.Lists;
 import com.twitter.util.Function;
 import com.twitter.util.Future;
 import scala.runtime.BoxedUnit;
 
-import java.nio.ByteBuffer;
 import java.sql.*;
 import java.util.*;
 
@@ -21,30 +22,43 @@ public class MysqlClient implements BaseClient {
 
         return conn.flatMap(new Function<Connection, Future<QueryResponse>>() {
             public Future<QueryResponse> apply(Connection currConn) {
-                Statement stmt = null;
                 try {
+                    Statement stmt = currConn.createStatement();
 
-                    stmt = currConn.createStatement();
-                    stmt.execute(query);
+                    QueryState queryState = stmt.execute(query) ? QueryState.SUCCESS : QueryState.FAILURE;
+                    ResultSet rs = stmt.getResultSet();
 
-                    ResultSet rs = stmt.executeQuery(query);
-                    ResultSetMetaData rsmd = rs.getMetaData();
+                    ArrayList<String> columnNameList = Lists.newArrayList();
+                    Iterator<ResultRow> iterator = null;
 
-                    Map<Integer, String> columnMetaData = columnNames(rsmd);
-                    ArrayList<String> columnNameList = new ArrayList<String>(columnMetaData.values());
+                    if (rs != null) {
+                        ResultSetMetaData rsmd = rs.getMetaData();
+                        Map<Integer, String> columnMetaData = columnNames(rsmd);
 
-                    Iterator<ResultRow> iterator = new ResultRowIterator(rs, rsmd.getColumnCount());
+                        columnNameList = new ArrayList<String>(columnMetaData.values());
+                        iterator = new ResultRowIterator(rs, rsmd.getColumnCount());
+                    }
 
-                    return Future.value(new QueryResponse(iterator, columnNameList));
+                    return Future.value(new QueryResponse(iterator, columnNameList, queryState));
                 } catch (SQLException e) {
                     return Future.exception(e);
-                } finally {
-//                    try {
-//                        if (stmt != null)
-//                            stmt.close();
-//                    } catch (SQLException se2) {
-//                        // nothing we can do
-//                    }
+                }
+            }
+        });
+
+    }
+
+    private Future<QueryResponse> executeUpdate(final String query) {
+
+        return conn.flatMap(new Function<Connection, Future<QueryResponse>>() {
+            public Future<QueryResponse> apply(Connection currConn) {
+                try {
+                    Statement stmt = currConn.createStatement();
+                    Boolean rs = stmt.execute(query);
+                    QueryState queryState = rs ? QueryState.SUCCESS : QueryState.FAILURE;
+                    return Future.value(new QueryResponse(queryState));
+                } catch (SQLException e) {
+                    return Future.exception(e);
                 }
             }
         });
@@ -97,7 +111,6 @@ public class MysqlClient implements BaseClient {
             columMetaData.put(i, rsmd.getColumnName(i));
         }
         return columMetaData;
-
     }
 
     private static final class ResultRowIterator implements Iterator<ResultRow> {
@@ -122,9 +135,9 @@ public class MysqlClient implements BaseClient {
             try {
                 if (this.hasNext()) {
 
-                    List<ByteBuffer> results = new ArrayList<ByteBuffer>();
+                    List<String> results = new ArrayList<String>();
                     for (int i = 1; i <= columnCount; i++) {
-                        results.add(ByteBuffer.wrap(rs.getBytes(i)));
+                        results.add(rs.getString(i));
                     }
 
                     return new ResultRow(results);
@@ -139,7 +152,7 @@ public class MysqlClient implements BaseClient {
             } catch (SQLException e) {
                 e.printStackTrace();
             }
-            
+
             throw new NoSuchElementException();
         }
     }

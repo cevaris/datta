@@ -1,12 +1,16 @@
 package com.cevaris.datta.common.query.response;
 
-import java.nio.ByteBuffer;
 import java.util.List;
 
 public class ResultRow {
-    final List<ByteBuffer> rowData;
+    final List<String> rowData;
 
-    public ResultRow(List<ByteBuffer> rowData) {
+    public ResultRow(List<String> rowData) {
         this.rowData = rowData;
+    }
+
+    @Override
+    public String toString() {
+        return rowData.toString();
     }
 }
