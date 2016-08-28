@@ -32,9 +32,6 @@ public class MysqlClientIntegrationTest {
                 testClient.execute("select * from test_table")
         );
         Assert.assertNotNull(qr.iterator());
-
-        List<ResultRow> actual = Lists.newArrayList(qr.iterator());
-        Assert.assertNotNull(actual);
     }
 
     @Test
@@ -48,8 +45,7 @@ public class MysqlClientIntegrationTest {
 
         List<ResultRow> actual = Lists.newArrayList(qr.iterator());
         Assert.assertNotNull(actual);
-
-        Await.result(testClient.execute(sqlTruncate));
+        Assert.assertEquals(2, actual.size());
     }
 
     private BaseClient newTestClient() {

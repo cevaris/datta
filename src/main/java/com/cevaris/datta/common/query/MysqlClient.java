@@ -124,7 +124,7 @@ public class MysqlClient implements BaseClient {
 
         public boolean hasNext() {
             try {
-                return rs.next();
+                return !rs.isLast();
             } catch (SQLException e) {
                 e.printStackTrace();
                 return false;
@@ -133,7 +133,7 @@ public class MysqlClient implements BaseClient {
 
         public ResultRow next() {
             try {
-                if (this.hasNext()) {
+                if (this.hasNext() && rs.next()) {
 
                     List<String> results = new ArrayList<String>();
                     for (int i = 1; i <= columnCount; i++) {
