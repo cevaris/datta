@@ -2,6 +2,7 @@ package com.cevaris.datta.common.query;
 
 import com.cevaris.datta.common.query.response.QueryResponse;
 import com.cevaris.datta.common.query.response.QueryState;
+import com.cevaris.datta.common.query.response.ResultItem;
 import com.cevaris.datta.common.query.response.ResultRow;
 import com.google.common.collect.Lists;
 import com.twitter.util.Function;
@@ -28,18 +29,14 @@ public class MysqlClient implements BaseClient {
                     QueryState queryState = stmt.execute(query) ? QueryState.SUCCESS : QueryState.FAILURE;
                     ResultSet rs = stmt.getResultSet();
 
-                    ArrayList<String> columnNameList = Lists.newArrayList();
-                    Iterator<ResultRow> iterator = null;
+                    Iterator<ResultRow> iterator = new ArrayList<ResultRow>().iterator();
 
                     if (rs != null) {
                         ResultSetMetaData rsmd = rs.getMetaData();
-                        Map<Integer, String> columnMetaData = columnNames(rsmd);
-
-                        columnNameList = new ArrayList<String>(columnMetaData.values());
-                        iterator = new ResultRowIterator(rs, rsmd.getColumnCount());
+                        iterator = new ResultRowIterator(rs, rsmd);
                     }
 
-                    return Future.value(new QueryResponse(iterator, columnNameList, queryState));
+                    return Future.value(new QueryResponse(iterator, queryState));
                 } catch (SQLException e) {
                     return Future.exception(e);
                 }
@@ -47,24 +44,6 @@ public class MysqlClient implements BaseClient {
         });
 
     }
-
-    private Future<QueryResponse> executeUpdate(final String query) {
-
-        return conn.flatMap(new Function<Connection, Future<QueryResponse>>() {
-            public Future<QueryResponse> apply(Connection currConn) {
-                try {
-                    Statement stmt = currConn.createStatement();
-                    Boolean rs = stmt.execute(query);
-                    QueryState queryState = rs ? QueryState.SUCCESS : QueryState.FAILURE;
-                    return Future.value(new QueryResponse(queryState));
-                } catch (SQLException e) {
-                    return Future.exception(e);
-                }
-            }
-        });
-
-    }
-
 
     public Future<QueryResponse> all() {
         return Future.exception(new UnsupportedOperationException());
@@ -105,21 +84,13 @@ public class MysqlClient implements BaseClient {
         });
     }
 
-    private Map<Integer, String> columnNames(ResultSetMetaData rsmd) throws SQLException {
-        Map<Integer, String> columMetaData = new HashMap<Integer, String>();
-        for (int i = 1; i <= rsmd.getColumnCount(); i++) {
-            columMetaData.put(i, rsmd.getColumnName(i));
-        }
-        return columMetaData;
-    }
-
     private static final class ResultRowIterator implements Iterator<ResultRow> {
         private final ResultSet rs;
-        private final int columnCount;
+        private final ResultSetMetaData rsmd;
 
-        public ResultRowIterator(ResultSet rs, int columnCount) throws SQLException {
+        public ResultRowIterator(ResultSet rs, ResultSetMetaData rsmd) {
             this.rs = rs;
-            this.columnCount = columnCount;
+            this.rsmd = rsmd;
         }
 
         public boolean hasNext() {
@@ -135,13 +106,12 @@ public class MysqlClient implements BaseClient {
             try {
                 if (this.hasNext() && rs.next()) {
 
-                    List<String> results = new ArrayList<String>();
-                    for (int i = 1; i <= columnCount; i++) {
-                        results.add(rs.getString(i));
+                    List<ResultItem> results = Lists.newArrayList();
+                    for (int i = 1; i <= rsmd.getColumnCount(); i++) {
+                        results.add(new ResultItem(rsmd.getColumnName(i), rs.getString(rsmd.getColumnName(i))));
                     }
 
                     return new ResultRow(results);
-
                 }
             } catch (SQLException e) {
                 e.printStackTrace();

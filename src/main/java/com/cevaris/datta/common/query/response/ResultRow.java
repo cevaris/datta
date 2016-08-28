@@ -3,14 +3,14 @@ package com.cevaris.datta.common.query.response;
 import java.util.List;
 
 public class ResultRow {
-    final List<String> rowData;
+    final List<ResultItem> row;
 
-    public ResultRow(List<String> rowData) {
-        this.rowData = rowData;
+    public ResultRow(List<ResultItem> row) {
+        this.row = row;
     }
 
     @Override
     public String toString() {
-        return rowData.toString();
+        return row.toString();
     }
 }
