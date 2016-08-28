@@ -19,6 +19,10 @@ import java.util.*;
 
 /**
  * Example Mongo Document Iterator: http://goo.gl/ACAVJ5
+ * BJSON type/definition:
+ * - https://docs.mongodb.com/manual/reference/mongodb-extended-json/
+ * - https://docs.mongodb.com/manual/reference/bson-types/
+ * Mongo 3.0 Commands: https://docs.mongodb.com/manual/reference/command
  */
 public class MongoDbClient implements BaseClient {
 
