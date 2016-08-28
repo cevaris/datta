@@ -48,20 +48,6 @@ public class MongoDbClientIntegrationTest {
         Assert.assertEquals(2, actual.size());
     }
 
-    @Test
-    public void testQueryResultRow() throws Exception {
-        Await.result(testClient.execute(mongoInsertData));
-
-        QueryResponse qr = Await.result(
-                testClient.execute(mongoSelectAll)
-        );
-        Assert.assertNotNull(qr.iterator());
-
-        List<ResultRow> actual = Lists.newArrayList(qr.iterator());
-        Assert.assertNotNull(actual);
-        Assert.assertEquals(2, actual.size());
-    }
-
     private BaseClient newTestClient() {
         ConnectionFactory conn = new ConnectionFactory(
                 "localhost", "test_db", 27017, "test_user", "$EcrEt0$aucE"
@@ -75,8 +61,8 @@ public class MongoDbClientIntegrationTest {
     private String mongoInsertData = "{" +
             "   insert: \"test_table\" " +
             "   documents: [" +
-            "      { test_string: \"abc\", test_long: NumberLong(11), test_double: 11.11, test_bool: true,  test_array: [11,11], test_bin: \"MTE=\", test_date: new Date(1321096271), }," +
-            "      { test_string: \"cdf\", test_long: NumberLong(12), test_double: 12.12, test_bool: false, test_array: [12,12], test_bin: \"MTI=\", test_date: new Date(1355314332), }," +
+            "      { test_string: \"abc\", test_long: NumberLong(11), test_double: 11.11, test_bool: true,  test_obj: {test_11: 11} test_array: [11,11], test_bin: BinData(0,MTEK), test_date: new Date(1321096271), }," +
+            "      { test_string: \"cdf\", test_long: NumberLong(12), test_double: 12.12, test_bool: false, test_obj: {test_12: 12} test_array: [12,12], test_bin: BinData(0,MTIK), test_date: new Date(1355314332), }," +
             "   ]" +
             "}";
 }

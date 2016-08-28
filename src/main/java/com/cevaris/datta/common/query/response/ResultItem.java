@@ -11,6 +11,12 @@ public class ResultItem {
         this.type = String.class;
     }
 
+    public ResultItem(String value) {
+        this.key = "";
+        this.value = value;
+        this.type = String.class;
+    }
+
     public ResultItem(String key, String value, Class type) {
         this.key = key;
         this.value = value;

@@ -17,6 +17,9 @@ import scala.runtime.BoxedUnit;
 
 import java.util.*;
 
+/**
+ * Example Mongo Document Iterator: http://goo.gl/ACAVJ5
+ */
 public class MongoDbClient implements BaseClient {
 
     private static final String BATCH_SIZE = "batchSize";
@@ -91,9 +94,7 @@ public class MongoDbClient implements BaseClient {
         List<ResultRow> rows = Lists.newArrayList();
         for (Document doc : docs) {
             List<ResultItem> row = Lists.newArrayList();
-            for (String key : doc.keySet()) {
-                row.add(new ResultItem(key, doc.get(key).toString()));
-            }
+            row.add(new ResultItem(doc.toJson()));
             rows.add(new ResultRow(row));
         }
         return rows;
