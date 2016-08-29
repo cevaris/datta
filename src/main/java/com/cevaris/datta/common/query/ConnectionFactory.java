@@ -1,9 +1,11 @@
 package com.cevaris.datta.common.query;
 
+import com.datastax.driver.core.Cluster;
 import com.mongodb.MongoClient;
 import com.mongodb.MongoCredential;
 import com.mongodb.ServerAddress;
 
+import java.net.InetSocketAddress;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.Collections;
@@ -23,9 +25,15 @@ public class ConnectionFactory {
         this.password = password;
     }
 
-    public BaseClient newInstance(ConnectionType type) {
+    public GenericClient newInstance(ConnectionType type) {
 
         switch (type) {
+            case CASSANDRA:
+                Cluster cluster = Cluster.builder()
+                        .addContactPointsWithPorts(new InetSocketAddress(host, port))
+                        .withCredentials(user, password)
+                        .build();
+                return new CassandraClient(cluster);
             case MONGO_DB:
                 ServerAddress sa = new ServerAddress(host, port);
                 MongoCredential credential = MongoCredential.createCredential(user, database, password.toCharArray());

@@ -12,7 +12,7 @@ import java.util.List;
 
 public class MysqlClientIntegrationTest {
 
-    private BaseClient testClient;
+    private GenericClient testClient;
 
     @Before
     public void setUp() throws Exception {
@@ -60,7 +60,7 @@ public class MysqlClientIntegrationTest {
         Assert.assertEquals(1, actual.size());
     }
 
-    private BaseClient newTestClient() {
+    private GenericClient newTestClient() {
         ConnectionFactory conn = new ConnectionFactory(
                 "localhost", "test_db", 3306, "test_user", "$EcrEt0$aucE"
         );

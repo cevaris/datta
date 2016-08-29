@@ -12,7 +12,7 @@ import java.util.List;
 
 public class MongoDbClientIntegrationTest {
 
-    private BaseClient testClient;
+    private GenericClient testClient;
 
     @Before
     public void setUp() throws Exception {
@@ -56,7 +56,7 @@ public class MongoDbClientIntegrationTest {
         Assert.assertEquals(1, actual.size());
     }
 
-    private BaseClient newTestClient() {
+    private GenericClient newTestClient() {
         ConnectionFactory conn = new ConnectionFactory(
                 "localhost", "test_db", MongoDbClient.DEFAULT_PORT, "test_user", "$EcrEt0$aucE"
         );

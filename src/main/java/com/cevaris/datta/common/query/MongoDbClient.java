@@ -24,7 +24,7 @@ import java.util.*;
  * - https://docs.mongodb.com/manual/reference/bson-types/
  * Mongo 3.0 Commands: https://docs.mongodb.com/manual/reference/command
  */
-public class MongoDbClient implements BaseClient {
+public class MongoDbClient implements GenericClient {
 
     public static final int DEFAULT_PORT = 27017;
 
@@ -51,7 +51,16 @@ public class MongoDbClient implements BaseClient {
     }
 
     public Future<BoxedUnit> close() {
-        return Future.exception(new UnsupportedOperationException());
+        return conn.flatMap(new Function<MongoClient, Future<BoxedUnit>>() {
+            public Future<BoxedUnit> apply(MongoClient currConn) {
+                try {
+                    currConn.close();
+                    return null;
+                } catch (MongoException e) {
+                    return Future.exception(e);
+                }
+            }
+        });
     }
 
     public Future<Boolean> isConnected() {

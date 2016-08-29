@@ -4,7 +4,7 @@ import com.cevaris.datta.common.query.response.QueryResponse;
 import com.twitter.util.Future;
 import scala.runtime.BoxedUnit;
 
-public interface BaseClient {
+public interface GenericClient {
 
     abstract public Future<BoxedUnit> close();
 

@@ -12,7 +12,7 @@ import scala.runtime.BoxedUnit;
 import java.sql.*;
 import java.util.*;
 
-public class MysqlClient implements BaseClient {
+public class MysqlClient implements GenericClient {
     private final Future<Connection> conn;
 
     public MysqlClient(Connection conn) {
