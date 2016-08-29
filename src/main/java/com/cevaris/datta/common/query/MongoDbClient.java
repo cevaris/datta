@@ -26,6 +26,8 @@ import java.util.*;
  */
 public class MongoDbClient implements BaseClient {
 
+    public static final int DEFAULT_PORT = 27017;
+
     private static final String BATCH_SIZE = "batchSize";
     private static final String COLLECTION = "collection";
     private static final String FIRST_BATCH = "firstBatch";
@@ -34,6 +36,7 @@ public class MongoDbClient implements BaseClient {
     private static final String ID = "id";
     private static final String _ID = "_id";
     private static final String PING = "ping";
+    private static final String NCOUNT = "n";
     private static final String NAMESPACE = "ns";
     private static final String RESULT = "result";
     private static final String CURSOR = "cursor";
@@ -79,11 +82,11 @@ public class MongoDbClient implements BaseClient {
                     if (resultDoc.containsKey(RESULT)) {
                         List<Document> docs = (ArrayList<Document>) resultDoc.get(RESULT);
                         resultRows = transformDocuments(docs).iterator();
-                    } else {
-                        if (resultDoc.containsKey(CURSOR)) {
-                            Document docCursor = (Document) resultDoc.get(CURSOR);
-                            resultRows = new ResultRowIterator(docCursor, db);
-                        }
+                    } else if (resultDoc.containsKey(CURSOR)) {
+                        Document docCursor = (Document) resultDoc.get(CURSOR);
+                        resultRows = new ResultRowIterator(docCursor, db);
+                    } else if (resultDoc.containsKey(NCOUNT)) {
+                        resultRows = transformDocument(resultDoc).iterator();
                     }
 
                     return Future.value(new QueryResponse(resultRows, QueryState.FAILURE));
@@ -92,6 +95,14 @@ public class MongoDbClient implements BaseClient {
                 }
             }
         });
+    }
+
+    private static List<ResultRow> transformDocument(Document doc) {
+        List<ResultRow> rows = Lists.newArrayList();
+        List<ResultItem> row = Lists.newArrayList();
+        row.add(new ResultItem(doc.toJson()));
+        rows.add(new ResultRow(row));
+        return rows;
     }
 
     private static List<ResultRow> transformDocuments(List<Document> docs) {

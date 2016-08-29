@@ -48,6 +48,18 @@ public class MysqlClientIntegrationTest {
         Assert.assertEquals(2, actual.size());
     }
 
+    @Test
+    public void testQueryCount() throws Exception {
+        Await.result(testClient.execute(sqlInsertTestData));
+
+        QueryResponse qr = Await.result(testClient.execute(sqlCount));
+        Assert.assertNotNull(qr.iterator());
+
+        List<ResultRow> actual = Lists.newArrayList(qr.iterator());
+        Assert.assertNotNull(actual);
+        Assert.assertEquals(1, actual.size());
+    }
+
     private BaseClient newTestClient() {
         ConnectionFactory conn = new ConnectionFactory(
                 "localhost", "test_db", 3306, "test_user", "$EcrEt0$aucE"
@@ -56,6 +68,8 @@ public class MysqlClientIntegrationTest {
     }
 
     private String sqlSelectAll = "SELECT * FROM test_table";
+
+    private String sqlCount = "SELECT count(1) FROM test_table";
 
     private String sqlTruncate = "TRUNCATE test_table";
 

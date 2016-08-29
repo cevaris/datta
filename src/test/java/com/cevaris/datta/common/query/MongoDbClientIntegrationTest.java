@@ -28,9 +28,7 @@ public class MongoDbClientIntegrationTest {
 
     @Test
     public void testQueryEmptyResultRows() throws Exception {
-        QueryResponse qr = Await.result(
-                testClient.execute(mongoSelectAll)
-        );
+        QueryResponse qr = Await.result(testClient.execute(mongoSelectAll));
         Assert.assertNotNull(qr.iterator());
     }
 
@@ -38,9 +36,7 @@ public class MongoDbClientIntegrationTest {
     public void testQueryResultRows() throws Exception {
         Await.result(testClient.execute(mongoInsertData));
 
-        QueryResponse qr = Await.result(
-                testClient.execute(mongoSelectAll)
-        );
+        QueryResponse qr = Await.result(testClient.execute(mongoSelectAll));
         Assert.assertNotNull(qr.iterator());
 
         List<ResultRow> actual = Lists.newArrayList(qr.iterator());
@@ -48,15 +44,27 @@ public class MongoDbClientIntegrationTest {
         Assert.assertEquals(2, actual.size());
     }
 
+    @Test
+    public void testQueryCount() throws Exception {
+        Await.result(testClient.execute(mongoInsertData));
+
+        QueryResponse qr = Await.result(testClient.execute(mongoCount));
+        Assert.assertNotNull(qr.iterator());
+
+        List<ResultRow> actual = Lists.newArrayList(qr.iterator());
+        Assert.assertNotNull(actual);
+        Assert.assertEquals(1, actual.size());
+    }
+
     private BaseClient newTestClient() {
         ConnectionFactory conn = new ConnectionFactory(
-                "localhost", "test_db", 27017, "test_user", "$EcrEt0$aucE"
+                "localhost", "test_db", MongoDbClient.DEFAULT_PORT, "test_user", "$EcrEt0$aucE"
         );
         return conn.newInstance(ConnectionType.MONGO_DB);
     }
 
     private String mongoSelectAll = "{ find: \"test_table\", batchSize: 1 }";
-    private String mongoCount = "{ count: \"test_table\", HH: 1 }";
+    private String mongoCount = "{ count: \"test_table\" }";
     private String mongoTruncate = "{ delete: \"test_table\", deletes: [ { q: { }, limit: 0 } ],}";
     private String mongoInsertData = "{" +
             "   insert: \"test_table\" " +
