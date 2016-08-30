@@ -10,7 +10,10 @@ import com.twitter.util.Future;
 import scala.runtime.BoxedUnit;
 
 import java.sql.*;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.NoSuchElementException;
 
 public class MysqlClient implements GenericClient {
     private final Future<Connection> conn;
@@ -63,7 +66,7 @@ public class MysqlClient implements GenericClient {
         return conn.flatMap(new Function<Connection, Future<Boolean>>() {
             public Future<Boolean> apply(Connection currConn) {
                 try {
-                    return Future.value(currConn.isClosed());
+                    return Future.value(!currConn.isClosed());
                 } catch (SQLException e) {
                     return Future.exception(e);
                 }
@@ -108,6 +111,7 @@ public class MysqlClient implements GenericClient {
 
                     List<ResultItem> results = Lists.newArrayList();
                     for (int i = 1; i <= rsmd.getColumnCount(); i++) {
+                        // TODO: Convert rsmd.getColumnType(int i) to Class
                         results.add(new ResultItem(rsmd.getColumnName(i), rs.getString(rsmd.getColumnName(i))));
                     }
 

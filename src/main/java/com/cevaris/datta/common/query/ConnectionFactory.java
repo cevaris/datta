@@ -33,17 +33,20 @@ public class ConnectionFactory {
                         .addContactPointsWithPorts(new InetSocketAddress(host, port))
                         .withCredentials(user, password)
                         .build();
-                return new CassandraClient(cluster);
+                return new CassandraClient(cluster, database);
+
             case MONGO_DB:
                 ServerAddress sa = new ServerAddress(host, port);
                 MongoCredential credential = MongoCredential.createCredential(user, database, password.toCharArray());
                 return new MongoDbClient(new MongoClient(sa, Collections.singletonList(credential)), database);
+
             case MYSQL:
                 try {
                     return new MysqlClient(DriverManager.getConnection(buildFullMysqlJdbcConnection()));
                 } catch (SQLException e) {
                     e.printStackTrace();
                 }
+
             default:
                 throw new RuntimeException("failed");
         }
